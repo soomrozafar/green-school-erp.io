@@ -161,3 +161,32 @@ def test_teacher_campus_login_records_once(app, monkeypatch):
         assert client.post("/login", data={**login_data(client, "campus-teacher"), **location}).status_code == status
     with app.app_context():
         assert TeacherAttendance.query.one().status == "Present"
+
+def test_public_demo_preview_is_read_only(app, monkeypatch):
+    from app.models import Employee, SystemSetting, Teacher
+
+    monkeypatch.setenv("SCHOOL_ERP_PUBLIC_DEMO", "1")
+    with app.app_context():
+        student = Student(admission_no="DEMO-PREVIEW", first_name="Demo Preview", status="Active")
+        teacher = Teacher(employee=Employee(employee_no="DEMO-TEACH", name="Demo Teacher", employee_type="Teacher"))
+        db.session.add_all([student, teacher, SystemSetting(key="demo.seed.v1", value="1")])
+        for username, role, links in (
+            ("admin_demo", "admin", {}), ("student_demo", "student", {"student": student}),
+            ("teacher_demo", "teacher", {"teacher": teacher}),
+        ):
+            account = User(username=username, role=role, **links)
+            account.set_password("unused-in-public-preview")
+            db.session.add(account)
+        db.session.commit()
+    for role, redirect_to in (("admin", "/dashboard"), ("student", "/portal/"), ("teacher", "/portal/")):
+        client = app.test_client()
+        login_page = client.get("/login")
+        assert b"Admin Preview" in login_page.data
+        csrf = login_data(client)["csrf_token"]
+        result = client.post("/demo-login", data={"role": role, "csrf_token": csrf})
+        assert result.status_code == 303 and result.location == redirect_to
+        assert client.get(redirect_to).status_code == 200
+        assert client.get("/admin/users").status_code == 403
+        assert client.get("/profile/password").status_code == 403
+        if role == "admin":
+            assert client.get("/reports/students").status_code == 200

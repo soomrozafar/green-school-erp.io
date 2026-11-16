@@ -1,4 +1,4 @@
-{% if current_user.role in ('student', 'parent', 'teacher') %}
+{% if not public_demo_enabled and current_user.role in ('student', 'parent', 'teacher') %}
 <section class="card erp-card mb-3"><div class="card-body d-flex flex-wrap align-items-center gap-2">
   <div class="me-auto"><h2 class="h6 mb-1">Need help with the ERP?</h2><span class="text-muted small">Get guidance or contact the school office.</span></div>
   <button class="btn btn-outline-primary" type="button" data-assistant-open><i class="bi bi-stars" aria-hidden="true"></i> Chat with AI Assistant</button>

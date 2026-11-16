@@ -1,7 +1,9 @@
 from datetime import UTC, datetime, timedelta
+import os
+import re
 import secrets
 
-from flask import make_response, Blueprint, flash, redirect, render_template, request, session, url_for
+from flask import current_app, make_response, Blueprint, flash, redirect, render_template, request, session, url_for
 from flask_login import login_required, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -80,6 +82,34 @@ def login():
 
     flash("Invalid username or password.", "danger")
     return render_template("login.html")
+
+
+PUBLIC_DEMO_USERS = {"admin": "admin_demo", "student": "student_demo", "teacher": "teacher_demo"}
+
+
+def public_demo_enabled():
+    if os.environ.get("SCHOOL_ERP_PUBLIC_DEMO") != "1":
+        return False
+    uri = current_app.config["SQLALCHEMY_DATABASE_URI"]
+    return current_app.testing or bool(re.fullmatch(r"sqlite:////tmp/green-school-demo-[a-f0-9]{16}\.db", uri))
+
+
+@auth_bp.post("/demo-login")
+def demo_login():
+    from flask import abort
+    from .models import SystemSetting
+
+    if not public_demo_enabled() or not SystemSetting.query.filter_by(key="demo.seed.v1").first():
+        abort(404)
+    role = request.form.get("role")
+    username = PUBLIC_DEMO_USERS.get(role)
+    if not username:
+        abort(400)
+    user = User.query.filter_by(username=username, role=role, is_active_user=True).first_or_404()
+    session.clear()
+    login_user(user)
+    session["csrf_token"] = secrets.token_urlsafe(32)
+    return redirect(url_for("main.dashboard" if role == "admin" else "portal.index"), code=303)
 
 
 @auth_bp.post("/logout")

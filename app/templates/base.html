@@ -10,7 +10,7 @@
 </head><body>
 {% if current_user.is_authenticated %}
 {% set role = current_user.role %}
-{% set actions = assistant_actions(role) %}
+{% set actions = {} if public_demo_enabled else assistant_actions(role) %}
 {% macro nav_item(endpoint, icon, label) %}
 <a href="{{ url_for(endpoint) }}" title="{{ label }}"{% if request.endpoint == endpoint %} aria-current="page"{% endif %}>{% if endpoint == 'mess.index' %}<svg class="workspace-nav-dining-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 3v5a3 3 0 0 0 6 0V3M7 3v18M20 3c-3 1-5 4-5 8v2h5m0-10v18"/></svg>{% else %}<i class="bi bi-{{ icon }}" aria-hidden="true"></i>{% endif %}<span class="workspace-nav-label">{{ label }}</span></a>
 {% endmacro %}
@@ -46,11 +46,17 @@
   </div>
 </header>
 <div class="d-flex app-layout workspace-layout"><aside class="sidebar workspace-sidebar" id="workspaceNav" data-scroll-key="{{ current_user.get_id().split(':')[0] }}" aria-label="ERP navigation">
-{% if role in ("admin", "operations_admin") and module_enabled("mess", true) %}
+{% if not public_demo_enabled and role in ("admin", "operations_admin") and module_enabled("mess", true) %}
 {{ nav_item('mess.index', 'cup-hot', 'Mess & Dining') }}
 {% endif %}
 <p class="workspace-nav-caption">Workspace</p>
-{% if current_user.role == "operations_admin" %}
+{% if public_demo_enabled %}
+{% if role == "admin" %}
+{{ nav_item('main.dashboard', 'grid', 'Dashboard') }}{{ nav_item('reports.index', 'bar-chart', 'Reports') }}
+{% else %}
+{{ nav_item('portal.index', 'grid', 'My Portal') }}
+{% endif %}
+{% elif current_user.role == "operations_admin" %}
 {{ nav_item('operations.dashboard', 'speedometer2', 'Operations Dashboard') }}{{ nav_item('reports.index', 'bar-chart', 'Reports') }}
 {% if module_enabled("hostel", false) %}{{ nav_item('operations.hostel', 'house-door', 'Hostel') }}{% endif %}
 {% if module_enabled("transport", true) %}{{ nav_item('operations.transport', 'bus-front', 'Transport') }}{% endif %}
