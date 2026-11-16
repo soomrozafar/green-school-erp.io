@@ -1,0 +1,11 @@
+/instance/
+/venv/
+/app/static/uploads/
+.env
+.env.*
+!.env.example
+!.env.production.example
+*.db
+*.sqlite*
+__pycache__/
+.pytest_cache/

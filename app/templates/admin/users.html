@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block title %}User Management | School ERP{% endblock %}{% block content %}
+
+<form method="post" class="card p-3 mb-4 shadow-sm border-0">
+  <div class="row g-2">
+    <div class="col-md-3"><input class="form-control" name="username" placeholder="Username" required></div>
+    <div class="col-md-3"><input class="form-control" name="password" type="password" minlength="8" placeholder="Password (8+ chars)" required></div>
+    <div class="col-md-3"><select class="form-select" name="role" id="userRole" required>{% for value, label in role_labels.items() %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div>
+    <div class="col-md-3" id="studentPicker"><select class="form-select" name="student_id"><option value="">Select Student</option>{% for s in students %}<option value="{{s.id}}">{{s.admission_no}} — {{s.first_name}} {{s.last_name or ''}}</option>{% endfor %}</select></div>
+    <div class="col-md-3" id="teacherPicker"><select class="form-select" name="teacher_id" aria-label="Teacher profile"><option value="">Select Teacher</option>{% for teacher in teachers %}<option value="{{ teacher.id }}">{{ teacher.employee.name }}</option>{% endfor %}</select></div>
+    <div class="col-md-3" id="parentPicker"><select class="form-select" name="parent_id" aria-label="Guardian profile"><option value="">Select Guardian</option>{% for parent in parents %}<option value="{{parent.id}}">{{parent.name}} · #{{parent.id}}</option>{% endfor %}</select></div>
+    <div class="col-12"><button class="btn btn-primary"><i class="bi bi-person-plus me-1"></i>Create User</button><span class="text-muted small ms-2">For a student portal account, select role <b>student</b> and link the student record.</span></div>
+  </div>
+</form>
+<table class="table table-hover align-middle"><tr><th>Username</th><th>Role</th><th>Student</th><th>Created</th></tr>{% for u in users %}<tr><td>{{u.username}}</td><td><span class="badge text-bg-light">{{u.role}}</span></td><td>{% if u.student %}{{u.student.admission_no}} — {{u.student.first_name}} {{u.student.last_name or ''}}{% else %}-{% endif %}</td><td>{{u.created_at}}</td></tr>{% endfor %}</table>
+<script>const role=document.getElementById('userRole'), picker=document.getElementById('studentPicker'); function toggleStudent(){picker.hidden=role.value!=='student'; document.getElementById('teacherPicker').hidden=role.value!=='teacher'; document.getElementById('parentPicker').hidden=role.value!=='parent';} role.addEventListener('change',toggleStudent); toggleStudent();</script>
+{% endblock %}

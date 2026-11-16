@@ -1,0 +1,18 @@
+{% extends 'base.html' %}{% block title %}Announcements{% endblock %}{% block page_heading %}Announcements{% endblock %}{% block content %}
+<form method="post" class="card erp-card mb-3"><div class="card-body row g-3">
+<input type="hidden" name="csrf_token" value="{{session.csrf_token}}">
+<div class="col-md-8"><label class="form-label" for="title">Title</label><input class="form-control" id="title" name="title" maxlength="180" required></div>
+<div class="col-md-4"><label class="form-label" for="audience">Audience</label><select class="form-select" id="audience" name="audience">{% for name in audiences %}<option>{{name}}</option>{% endfor %}</select></div>
+<div class="col-12"><label class="form-label" for="message">Message</label><textarea class="form-control" id="message" name="message" maxlength="4000" rows="3" required></textarea></div>
+<div><button class="btn btn-primary">Publish Announcement</button></div></div></form>
+<form method="get" class="d-flex gap-2 mb-3"><select class="form-select w-auto" aria-label="Filter by audience" name="audience"><option value="">All audiences</option>{% for name in audiences %}<option{% if name==audience %} selected{% endif %}>{{name}}</option>{% endfor %}</select><button class="btn btn-outline-primary">Filter</button></form>
+{% for n in notifications %}<section class="card erp-card mb-2"><div class="card-body">
+<div class="d-flex justify-content-between gap-2"><h2 class="h5">{{n.title}}</h2><span class="small text-muted">{{n.audience}} · {{'Published' if n.is_active else 'Archived'}}</span></div>
+<p>{{n.message}}</p><div class="d-flex justify-content-between align-items-center"><small class="text-muted">{{n.created_at.strftime('%d %b %Y %H:%M') if n.created_at else ''}}</small>
+{% if n.is_active %}<form method="post" action="{{url_for('notifications.archive', notice_id=n.id)}}"><input type="hidden" name="csrf_token" value="{{session.csrf_token}}"><button class="btn btn-sm btn-outline-secondary">Archive</button></form>{% endif %}</div></div></section>
+{% else %}<p class="text-muted">No announcements found.</p>{% endfor %}
+{% if page.pages > 1 %}<nav class="d-flex gap-2 align-items-center" aria-label="Announcement pages">
+{% if page.has_prev %}<a class="btn btn-sm btn-outline-primary" href="{{url_for(request.endpoint, page=page.prev_num, audience=audience)}}">Previous</a>{% endif %}
+<span>Page {{page.page}} of {{page.pages}}</span>
+{% if page.has_next %}<a class="btn btn-sm btn-outline-primary" href="{{url_for(request.endpoint, page=page.next_num, audience=audience)}}">Next</a>{% endif %}
+</nav>{% endif %}{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Reports Center{% endblock %}
+{% block page_heading %}Reports Center{% endblock %}
+{% block content %}
+<div class="row g-3">
+{% for group in groups %}
+  <div class="col-md-6 col-xl-4"><section class="card erp-card h-100">
+    <div class="card-header fw-semibold">{{group}}</div>
+    <div class="list-group list-group-flush">
+    {% for key, report in reports.items() if report.group == group %}
+      <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+         href="{{url_for('reports.detail', key=key)}}">{{report.name}}<i class="bi bi-chevron-right" aria-hidden="true"></i></a>
+    {% endfor %}
+    </div>
+  </section></div>
+{% endfor %}
+</div>
+{% endblock %}

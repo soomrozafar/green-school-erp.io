@@ -1,0 +1,4 @@
+{% extends 'base.html' %}{% block title %}Login History{% endblock %}{% block content %}
+<div class="mb-3"><p class="text-muted mb-0">Successful and failed authentication events.</p></div>
+<div class="card shadow-sm"><div class="card-body"><div class="table-responsive"><table class="table table-hover"><thead><tr><th>Date/Time</th><th>Username</th><th>Event</th><th>IP Address</th><th>Browser</th></tr></thead><tbody>{% for x in events.items %}<tr><td>{{ x.created_at.strftime('%Y-%m-%d %H:%M') if x.created_at else '' }}</td><td>{{ x.username }}</td><td>{% if x.event=='login' %}<span class="badge bg-success">Login</span>{% else %}<span class="badge bg-danger">Failed</span>{% endif %}</td><td>{{ x.ip_address or '-' }}</td><td class="small">{{ x.user_agent or '-' }}</td></tr>{% else %}<tr><td colspan="5" class="text-center text-muted py-4">No login events.</td></tr>{% endfor %}</tbody></table></div></div></div>
+{% endblock %}

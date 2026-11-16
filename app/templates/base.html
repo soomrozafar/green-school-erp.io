@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}School ERP{% endblock %}</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/workspace.css') }}" rel="stylesheet">
+{% block extra_head %}{% endblock %}
+</head><body>
+{% if current_user.is_authenticated %}
+{% set role = current_user.role %}
+{% set actions = assistant_actions(role) %}
+{% macro nav_item(endpoint, icon, label) %}
+<a href="{{ url_for(endpoint) }}" title="{{ label }}"{% if request.endpoint == endpoint %} aria-current="page"{% endif %}>{% if endpoint == 'mess.index' %}<svg class="workspace-nav-dining-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 3v5a3 3 0 0 0 6 0V3M7 3v18M20 3c-3 1-5 4-5 8v2h5m0-10v18"/></svg>{% else %}<i class="bi bi-{{ icon }}" aria-hidden="true"></i>{% endif %}<span class="workspace-nav-label">{{ label }}</span></a>
+{% endmacro %}
+<header class="workspace-topbar">
+  <div class="workspace-topbar-start">
+    <button class="workspace-icon-button d-md-none" id="sidebarToggle" type="button" aria-label="Toggle navigation" aria-controls="workspaceNav" aria-expanded="false"><i class="bi bi-list" aria-hidden="true"></i></button>
+    <button class="workspace-icon-button d-none d-md-inline-flex" id="sidebarCompactToggle" type="button" aria-label="Collapse navigation" title="Collapse navigation" aria-controls="workspaceNav" aria-expanded="true"><i class="bi bi-layout-sidebar" aria-hidden="true"></i></button>
+    <a class="workspace-brand" href="{{ url_for('main.dashboard') }}">
+      <img src="{{ url_for('static', filename='assets/green-school-logo.png') }}" width="36" height="36" alt="">
+      <span><strong>Green School</strong><small>School Management ERP</small></span>
+    </a>
+  </div>
+  <div class="workspace-topbar-end">
+    {% if 'students' in actions or 'balance' in actions or role in ('admin', 'operations_admin', 'staff') %}
+    <form class="global-search d-none d-lg-block" action="{{ url_for('main.global_search') }}" method="get" role="search" data-live-search="workspace"
+          data-students="{{ url_for('students.list_students') }}" data-employees="{{ url_for('hr.employees') }}" data-invoices="{{ url_for('finance.fees') }}">
+      <i class="bi bi-search" aria-hidden="true"></i><input id="globalSearch" name="q" placeholder="Search school records" aria-label="Search school records" maxlength="80" autocomplete="off" aria-controls="searchResults">
+      <div id="searchResults" class="search-results" aria-live="polite"></div>
+    </form>
+    {% endif %}
+    {% if actions %}<button class="workspace-assistant-button" type="button" data-assistant-open aria-label="Open ERP assistant"><i class="bi bi-stars" aria-hidden="true"></i><span>AI Assistant</span></button>{% endif %}
+    <details class="workspace-account">
+      <summary aria-label="Account menu">
+        <span class="workspace-avatar">{{ current_user.username[:1]|upper }}</span>
+        <span class="workspace-account-name"><strong>{{ current_user.username }}</strong><small>{{ role|replace('_', ' ')|title }}</small></span>
+        <i class="bi bi-chevron-down" aria-hidden="true"></i>
+      </summary>
+      <div class="workspace-account-menu">
+        <a href="{{ url_for('profile.password') }}"><i class="bi bi-key" aria-hidden="true"></i> Change password</a>
+        <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ session.csrf_token }}"><button type="submit"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> Sign out</button></form>
+      </div>
+    </details>
+  </div>
+</header>
+<div class="d-flex app-layout workspace-layout"><aside class="sidebar workspace-sidebar" id="workspaceNav" data-scroll-key="{{ current_user.get_id().split(':')[0] }}" aria-label="ERP navigation">
+{% if role in ("admin", "operations_admin") and module_enabled("mess", true) %}
+{{ nav_item('mess.index', 'cup-hot', 'Mess & Dining') }}
+{% endif %}
+<p class="workspace-nav-caption">Workspace</p>
+{% if current_user.role == "operations_admin" %}
+{{ nav_item('operations.dashboard', 'speedometer2', 'Operations Dashboard') }}{{ nav_item('reports.index', 'bar-chart', 'Reports') }}
+{% if module_enabled("hostel", false) %}{{ nav_item('operations.hostel', 'house-door', 'Hostel') }}{% endif %}
+{% if module_enabled("transport", true) %}{{ nav_item('operations.transport', 'bus-front', 'Transport') }}{% endif %}
+{% if module_enabled("transport", true) %}{{ nav_item('operations.transport_assign', 'person-check', 'Transport Assignment') }}{% endif %}
+{% if module_enabled("inventory", true) %}{{ nav_item('operations.inventory', 'box-seam', 'Inventory') }}{% endif %}
+{% elif current_user.role == "student" %}
+{{ nav_item('portal.index', 'grid', 'Student Dashboard') }}{% if current_user.student %}<a href="{{ url_for('students.id_card', id=current_user.student.id) }}" title="My ID Card"{% if request.endpoint == 'students.id_card' %} aria-current="page"{% endif %}><i class="bi bi-person-vcard" aria-hidden="true"></i><span class="workspace-nav-label">My ID Card</span></a>{% endif %}{{ nav_item('profile.password', 'key', 'Change Password') }}
+{% elif current_user.family_or_demo_teacher %}
+{{ nav_item('portal.index', 'grid', 'My Portal') }}{{ nav_item('profile.password', 'key', 'Change Password') }}
+{% elif role == "hr_officer" %}
+{{ nav_item('hr.employees', 'person-badge', 'Employees') }}{{ nav_item('hr.leave', 'calendar2-check', 'Staff Leave') }}{{ nav_item('hr.teacher_attendance', 'person-check', 'Teacher Attendance') }}
+{{ nav_item('reports.index', 'bar-chart', 'Reports') }}
+{% elif role in ("examination_officer", "principal", "vice_principal") %}
+{{ nav_item('academics.exams', 'journal-text', 'Exams') }}{{ nav_item('academics.results', 'award', 'Review Results') }}{{ nav_item('reports.index', 'bar-chart', 'Reports') }}{% if role in ('principal', 'vice_principal') %}{{ nav_item('hr.leave', 'calendar2-check', 'Staff Leave') }}{% endif %}
+{% elif role == "teacher" %}
+{{ nav_item('portal.index', 'grid', 'My Portal') }}{{ nav_item('students.attendance', 'calendar-check', 'Class Attendance') }}{{ nav_item('reports.index', 'bar-chart', 'Reports') }}{{ nav_item('students.attendance_report', 'clipboard-check', 'Attendance Report') }}{{ nav_item('academics.results', 'award', 'Marks Entry') }}
+{% elif current_user.role == "admission_officer" %}
+{{ nav_item('main.dashboard', 'speedometer2', 'Admission Dashboard') }}
+{{ nav_item('students.new_student', 'person-plus', 'New Admission') }}{{ nav_item('students.promotion', 'arrow-up-circle', 'Student Promotion') }}
+{{ nav_item('students.list_students', 'people', 'Students') }}
+{{ nav_item('students.parents', 'diagram-3', 'Families') }}
+{{ nav_item('students.admission_report', 'bar-chart', 'Admission Reports') }}{{ nav_item('reports.index', 'bar-chart', 'Reports') }}{{ nav_item('finance.bulk_vouchers', 'receipt-cutoff', 'Bulk Vouchers') }}
+{% else %}
+{{ nav_item('main.dashboard', 'speedometer2', 'Dashboard') }}{{ nav_item('portal.index', 'grid', 'My Portal') }}
+{{ nav_item('students.list_students', 'people', 'Students') }}{{ nav_item('students.attendance', 'calendar-check', 'Attendance') }}{{ nav_item('students.parents', 'person-vcard', 'Parents') }}
+{{ nav_item('academics.teachers', 'person-workspace', 'Teachers') }}{{ nav_item('academics.exams', 'journal-text', 'Exams') }}{{ nav_item('academics.results', 'award', 'Results') }}{{ nav_item('academics.grades', 'graph-up', 'Grade Scale') }}
+{{ nav_item('hr.employees', 'person-badge', 'Employees') }}{% if role == 'admin' %}{{ nav_item('hr.leave', 'calendar2-check', 'Staff Leave') }}{% endif %}{{ nav_item('hr.payroll', 'wallet2', 'Payroll') }}{{ nav_item('accounts.dashboard', 'bank', 'Accounts') }}
+{% if role in ('admin', 'accountant', 'staff', 'librarian') %}{{ nav_item('reports.index', 'bar-chart', 'Reports') }}{% endif %}{% if role in ('admin', 'staff', 'principal', 'vice_principal') %}{{ nav_item('notifications.index', 'bell', 'Announcements') }}{% endif %}{% if role in ('admin', 'staff', 'accountant', 'admission_officer') %}{{ nav_item('notifications.whatsapp', 'whatsapp', 'WhatsApp Drafts') }}{% endif %}{% if role in ("admin", "librarian") and module_enabled("library", true) %}{{ nav_item('library.books', 'book', 'Library') }}{{ nav_item('library.issue', 'arrow-left-right', 'Issue/Return') }}{% endif %}{{ nav_item('timetable.index', 'calendar3', 'Timetable') }}{% if role in ('admin', 'staff') %}{{ nav_item('hr.teacher_attendance', 'person-check', 'Teacher Attendance') }}{% endif %}
+{% if module_enabled("transport", true) %}{{ nav_item('operations.transport', 'bus-front', 'Transport') }}{% endif %}{% if module_enabled("hostel", false) %}{{ nav_item('operations.hostel', 'house-door', 'Hostel') }}{% endif %}{% if module_enabled("inventory", true) %}{{ nav_item('operations.inventory', 'box-seam', 'Inventory') }}{% endif %}
+{% if current_user.role == "admin" %}<p class="workspace-nav-caption">Administration</p>{{ nav_item('admin.users', 'person-gear', 'Users') }}{{ nav_item('admin.data_edit', 'pencil-square', 'Data Edit Center') }}{{ nav_item('admin.sessions', 'calendar-range', 'Sessions') }}{{ nav_item('admin.classes', 'diagram-3', 'Classes') }}{{ nav_item('admin.subjects', 'bookmark', 'Subjects') }}{{ nav_item('admin.permissions', 'shield-lock', 'Permissions') }}{{ nav_item('admin.modules', 'toggles', 'Modules & Integrations') }}{{ nav_item('admin.banks', 'bank', 'Bank Accounts') }}{{ nav_item('production.audit', 'journal-text', 'Audit Log') }}{{ nav_item('production.login_history', 'door-open', 'Login History') }}{{ nav_item('production.integrity', 'clipboard2-check', 'Data Integrity') }}{{ nav_item('production.backups', 'database-down', 'Backups') }}{{ nav_item('production.system_health', 'heart-pulse', 'System Health') }}{% endif %}
+{% endif %}
+</aside><main class="workspace-main flex-grow-1" id="main-content">
+{% with messages=get_flashed_messages(with_categories=true) %}{% for category,message in messages %}<div class="alert alert-{{category}}">{{message}}</div>{% endfor %}{% endwith %}
+{% set banner = module_banner(request.endpoint, role) %}
+<header class="workspace-hero workspace-module-hero" style="--workspace-hero-image: url('{{ url_for('static', filename=banner[1]) }}')">
+  <div class="workspace-hero-copy">
+    <p class="workspace-date"><i class="bi bi-calendar3" aria-hidden="true"></i> <time datetime="{{ banner[2].isoformat() }}">{{ banner[2].strftime('%A, %d %B %Y') }}</time></p>
+    <h1>{% block page_heading %}{{ banner[0] }}{% endblock %}</h1>
+    <p class="workspace-hero-description">{% block header_description %}{% endblock %}</p>
+  </div>
+  {% block header_action %}{% endblock %}
+</header>
+<div class="page-content">{% block content %}{% endblock %}</div></main></div>
+{% if actions %}{% include "assistant_panel.html" %}{% endif %}
+{% else %}{% block public %}{% endblock %}{% endif %}
+
+<script>
+(function(){
+ const token={{ session.get('csrf_token','')|tojson }};
+ document.addEventListener('DOMContentLoaded',function(){document.querySelectorAll('form[method="post"],form[method="POST"],form:not([method])').forEach(function(form){if(!form.querySelector('input[name="csrf_token"]')){const i=document.createElement('input');i.type='hidden';i.name='csrf_token';i.value=token;form.appendChild(i);}});});
+})();
+</script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block extra_scripts %}{% endblock %}
+<script src="{{ url_for('static', filename='js/workspace.js', v=5) }}" defer></script>
+</body></html>

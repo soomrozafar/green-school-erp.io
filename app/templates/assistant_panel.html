@@ -1,0 +1,29 @@
+<dialog class="workspace-assistant" id="erpAssistant" aria-labelledby="assistantTitle" data-overview-url="{{ url_for('assistant.overview') }}">
+  <header>
+    <span class="workspace-stat-icon"><i class="bi bi-stars" aria-hidden="true"></i></span>
+    <div class="assistant-heading">
+      <h2 id="assistantTitle">ERP Assistant</h2>
+      <span class="assistant-mode"><span aria-hidden="true"></span>{{ 'Ollama configured' if assistant_ollama_configured else 'Built-in mode' }}</span>
+    </div>
+    <button class="workspace-icon-button" type="button" data-assistant-close aria-label="Close assistant"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+  </header>
+  <div class="assistant-body">
+    <p class="assistant-intro">Ask a question about Green School ERP or open a guided workflow.</p>
+    <div class="assistant-prompts" aria-label="Suggested questions">
+      {% for key, prompt in [('attendance','Attendance today'), ('teacher_attendance','Teacher attendance'), ('timetable_import','Import timetable'), ('course_allocation','Import teacher subjects'), ('family_portal','My children'), ('teacher_portal','My timetable'), ('contact_school','Contact administrator'), ('communication','School announcements'), ('overdue','Overdue invoices'), ('balance','Outstanding fees'), ('vouchers','Bulk challans'), ('system_review','System health'), ('admission_review','Admissions today'), ('admission','New admission'), ('grades','Grades pending'), ('portal','My results'), ('reports','Open reports'), ('password','Change password')] %}
+      {% if key in actions %}<button type="button" data-assistant-prompt="{{ prompt }}">{{ prompt }}</button>{% endif %}
+      {% endfor %}
+    </div>
+    <div class="assistant-overview" aria-live="polite"></div>
+    <div class="assistant-history" aria-label="Current chat history"></div>
+    <div id="assistantExchange" class="assistant-exchange" hidden>
+      <p id="assistantAsked"></p>
+      <div id="assistantAnswer" class="assistant-answer" role="status"></div>
+    </div>
+  </div>
+  <form class="assistant-form" method="post" action="{{ url_for('assistant.ask') }}" data-async>
+    <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+    <label for="assistantQuestion">Your question</label>
+    <div><input class="form-control" id="assistantQuestion" name="question" maxlength="280" placeholder="What do you want to do?" required><button class="btn btn-primary" type="submit">Ask <i class="bi bi-arrow-up-right" aria-hidden="true"></i></button></div>
+  </form>
+</dialog>

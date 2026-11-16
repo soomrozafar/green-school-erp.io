@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+  
+  <a class="btn btn-outline-primary" href="{{ url_for('students.attendance_report') }}">Attendance Report</a>
+</div>
+
+<div class="card p-3 shadow-sm mt-3">
+  <form method="get" class="row g-2 mb-3" id="attendance-filter-form">
+    <div class="col-md-3">
+      <label class="form-label">Date</label>
+      <input type="date" class="form-control" name="date" value="{{ selected_date }}" required onchange="this.form.submit()">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Class</label>
+      <select class="form-select" name="class_id" id="attendance-class" onchange="this.form.submit()">
+        <option value="">{{ "Select an assigned class" if current_user.role == "teacher" else "All active students" }}</option>
+        {% for c in classes %}
+          <option value="{{ c.id }}" {% if class_id and class_id|int == c.id %}selected{% endif %}>
+            {{ c.name }} - {{ c.section }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+  </form>
+
+  {% if students %}
+  <form method="post" id="attendance-save-form">
+    <input type="hidden" name="csrf_token" value="{{ session.get('csrf_token','') }}">
+    <input type="hidden" name="action" value="save">
+    <input type="hidden" name="date" value="{{ selected_date }}">
+    <input type="hidden" name="class_id" value="{{ class_id or '' }}">
+
+    <button type="button" class="btn btn-outline-primary btn-sm mb-2" data-mark-unmarked>Mark unrecorded students present</button>
+    {% for s in students %}
+    <div class="row align-items-center border-bottom py-2">
+      <div class="col-md-6">
+        <strong>{{ s.admission_no }}</strong> — {{ s.first_name }} {{ s.last_name or '' }}
+      </div>
+      <div class="col-md-4">
+        <select class="form-select" name="student_{{ s.id }}" aria-label="Attendance for {{ s.admission_no }}" data-attendance-status>
+          <option value="">Unmarked</option>
+          {% for x in ['Present','Absent','Late','Leave'] %}
+            <option value="{{ x }}" {% if existing.get(s.id) == x %}selected{% endif %}>{{ x }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    {% endfor %}
+
+    <button type="submit" class="btn btn-primary mt-3 w-100">Save Attendance</button>
+  </form>
+  {% else %}
+    <p class="text-muted mb-0">{{ "Select an assigned class to load its roster." if current_user.role == "teacher" and not class_id else "No active students found for the selected filter." }}</p>
+  {% endif %}
+</div>
+{% endblock %}
+{% block extra_scripts %}<script src="{{ url_for('static', filename='js/attendance.js') }}"></script>{% endblock %}

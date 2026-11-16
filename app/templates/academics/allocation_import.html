@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block page_heading %}Import Teacher Subjects{% endblock %}
+{% block content %}
+{% if errors %}<div class="alert alert-warning"><ul class="mb-0">{% for error in errors %}<li>{{error}}</li>{% endfor %}</ul></div>{% endif %}
+<form method="post" enctype="multipart/form-data" class="card erp-card mb-3"><div class="card-body">
+<input type="hidden" name="csrf_token" value="{{session.csrf_token}}">
+<label for="allocation-source" class="form-label">Upload CSV, Excel, Word or a clear table image</label>
+<input id="allocation-source" name="source_file" type="file" class="form-control mb-3" accept=".csv,.tsv,.txt,.xlsx,.docx,.png,.jpg,.jpeg">
+<label for="allocation-text" class="form-label">Or paste teacher assignments</label>
+<textarea id="allocation-text" name="allocation_text" class="form-control mb-2" rows="6" placeholder="Teacher,Subject&#10;EMP-001,SINDHI">{{text}}</textarea>
+<p class="small text-muted">Use one teacher and subject per row. Employee numbers and subject codes resolve ambiguous names. Existing assignments are preserved.</p>
+<button class="btn btn-primary" name="action" value="preview">Preview Import</button>
+{% if assistant_ollama_configured %}<button class="btn btn-outline-primary" name="action" value="ai"><i class="bi bi-stars" aria-hidden="true"></i> Extract with Ollama</button>{% endif %}
+</div></form>
+{% if reviewed %}<div class="card erp-card"><div class="card-header">Review Assignments</div>
+<div class="table-responsive"><table class="table mb-0"><thead><tr><th>Employee</th><th>Teacher</th><th>Subject</th><th>Action</th></tr></thead><tbody>
+{% for employee, subject, exists in reviewed %}<tr><td>{{employee.employee_no}}</td><td>{{employee.name}}</td><td>{{subject.name}}</td><td>{{'Already assigned' if exists else 'Add'}}</td></tr>{% endfor %}
+</tbody></table></div>
+{% if token %}<form method="post" class="card-body"><input type="hidden" name="csrf_token" value="{{session.csrf_token}}"><input type="hidden" name="draft" value="{{token}}"><button class="btn btn-primary" name="action" value="save">Confirm and Save Assignments</button></form>{% endif %}
+</div>{% endif %}
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Admission Dashboard | School ERP{% endblock %}
+{% block page_heading %}Admission Dashboard{% endblock %}
+{% block header_description %}Only admission-related information and actions are available in this account.{% endblock %}
+{% block content %}
+
+<div class="row g-3 mb-4">
+<div class="col-md-4"><div class="metric-card"><span>Admissions Today</span><strong>{{ admissions_today }}</strong><i class="bi bi-person-plus"></i></div></div>
+<div class="col-md-4"><div class="metric-card"><span>Active Students</span><strong>{{ active_students }}</strong><i class="bi bi-people"></i></div></div>
+<div class="col-md-4"><div class="metric-card"><span>Families</span><strong>{{ families }}</strong><i class="bi bi-diagram-3"></i></div></div>
+</div>
+<div class="card erp-card mb-4"><div class="card-body d-flex flex-wrap gap-2"><a class="btn btn-primary" href="{{url_for('students.new_student')}}"><i class="bi bi-person-plus me-1"></i> New Admission</a><a class="btn btn-outline-primary" href="{{url_for('students.list_students')}}">View Students</a><a class="btn btn-outline-primary" href="{{url_for('students.parents')}}">Families</a><a class="btn btn-outline-primary" href="{{url_for('students.admission_report')}}">Admission Reports</a></div></div>
+<div class="card erp-card"><div class="card-header"><strong>Recent Admissions</strong></div><div class="table-responsive"><table class="table table-hover mb-0"><thead><tr><th>Student Code</th><th>Student</th><th>Father / Guardian</th><th>Class</th><th>Status</th><th></th></tr></thead><tbody>{% for s in recent_students %}<tr><td>{{s.admission_no}}</td><td>{{s.first_name}} {{s.last_name or ''}}</td><td>{{s.father_name or (s.parent.name if s.parent else '-')}}</td><td>{{s.class_room.name ~ ' - ' ~ s.class_room.section if s.class_room else '-'}}</td><td>{{s.status}}</td><td><a class="btn btn-sm btn-outline-primary" href="{{url_for('students.profile',id=s.id)}}">View</a></td></tr>{% else %}<tr><td colspan="6" class="text-center p-4 text-muted">No admissions yet.</td></tr>{% endfor %}</tbody></table></div></div>
+{% endblock %}

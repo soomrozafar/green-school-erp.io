@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Teacher Attendance{% endblock %}
+{% block header_description %}Review and record daily attendance for active teachers.{% endblock %}
+{% block content %}
+<div class="card p-3 mb-3">
+  <form method="get" class="d-flex align-items-end gap-3">
+    <label>Date<input name="date" type="date" class="form-control" value="{{ selected_date.isoformat() }}" required></label>
+    <button class="btn btn-outline-primary" type="submit">Load roster</button>
+  </form>
+</div>
+{% if roster %}
+<form method="post" class="card p-3">
+  <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+  <input type="hidden" name="date" value="{{ selected_date.isoformat() }}">
+  <div class="d-flex flex-wrap gap-2 justify-content-between mb-2">
+    <span>{{ existing|length }} attendance records for {{ selected_date.strftime('%d %b %Y') }}</span>
+    <button type="button" class="btn btn-outline-primary btn-sm" data-mark-unmarked>Mark unrecorded teachers present</button>
+  </div>
+  {% for teacher in roster %}
+  <label class="row align-items-center border-bottom py-2">
+    <span class="col-md-7">{{ teacher.employee.employee_no }} · {{ teacher.employee.name }}</span>
+    <span class="col-md-5"><select class="form-select" name="teacher_{{ teacher.id }}" data-attendance-status>
+      <option value="">Unmarked</option>
+      {% for status in statuses %}<option {% if teacher.id in existing and existing[teacher.id].status == status %}selected{% endif %}>{{ status }}</option>{% endfor %}
+    </select></span>
+  </label>
+  {% endfor %}
+  <button type="submit" class="btn btn-primary mt-3">Save Teacher Attendance</button>
+</form>
+{% else %}<div class="alert alert-info">No active teachers. Add a teacher profile and assign subjects in Teacher Management.</div>{% endif %}
+{% endblock %}
+{% block extra_scripts %}<script src="{{ url_for('static', filename='js/attendance.js') }}"></script>{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Family · {{parent.name}}{% endblock %}
+{% block page_heading %}{{parent.name}}{% endblock %}
+{% block header_description %}{{parent.relation or 'Father / Guardian'}} · {{parent.mobile or parent.phone or 'No mobile'}} · {{parent.email or 'No email'}}{% endblock %}
+{% block content %}
+
+<div class="row g-4"><div class="col-lg-4"><div class="card erp-card"><div class="card-header">Guardian Details</div><div class="card-body"><dl class="row mb-0"><dt class="col-5">CNIC</dt><dd class="col-7">{{parent.cnic or '-'}}</dd><dt class="col-5">Mobile</dt><dd class="col-7">{{parent.mobile or parent.phone or '-'}}</dd><dt class="col-5">Email</dt><dd class="col-7">{{parent.email or '-'}}</dd><dt class="col-5">Address</dt><dd class="col-7">{{parent.address or '-'}}</dd></dl></div></div></div><div class="col-lg-8"><div class="card erp-card"><div class="card-header">Children · {{children|length}}</div><div class="card-body"><div class="family-children">{% for child in children %}<a class="family-child" href="{{url_for('students.profile',id=child.id)}}"><i class="bi bi-mortarboard"></i><strong>{{child.first_name}} {{child.last_name or ''}}</strong><small>{{child.admission_no}} · {{child.class_room.name ~ ' - ' ~ child.class_room.section if child.class_room else '-'}} · {{child.status}}</small></a>{% else %}<div class="empty-state">No linked students.</div>{% endfor %}</div></div></div></div></div>
+{% endblock %}

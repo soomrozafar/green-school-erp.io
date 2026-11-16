@@ -1,0 +1,11 @@
+# Phase 22 QA Checklist
+- [x] Python compileall validation
+- [x] Additive schema upgrade for fee_invoice_item.fee_month
+- [x] Current-month automatic recommendation
+- [x] April -> June recommendation
+- [x] May -> July recommendation
+- [x] Manual calendar/month selection
+- [x] Multiple month selection
+- [x] Existing unpaid month detection to prevent duplicate charges
+- [x] Bulk student + multi-month generation
+- [ ] Runtime PostgreSQL/SQLite integration test in deployment environment

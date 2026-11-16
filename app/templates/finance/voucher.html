@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Fee Voucher {{ invoice.invoice_no }}{% endblock %}
+{% block page_heading %}Fee Voucher{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/fee-voucher.css') }}">{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-end gap-2 mb-3 no-print">
+  <button type="button" class="btn btn-primary" onclick="window.print()"><i class="bi bi-printer" aria-hidden="true"></i> Print Voucher</button>
+  <a class="btn btn-outline-primary" href="{{ url_for('exports.voucher_pdf', invoice_id=invoice.id) }}"><i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> PDF</a>
+</div>
+{% set items = invoice.items or [{'description': invoice.fee_type, 'amount': invoice.amount}] %}
+{% set student = invoice.student %}
+{% set due = invoice.due_date.strftime('%d %b %Y') if invoice.due_date else 'As per schedule' %}
+<div class="fee-voucher-sheet" aria-label="Three-copy school fee challan">
+  {% for copy in ['Student', 'Bank', 'School'] %}
+  <section class="fee-voucher-copy" aria-label="{{ copy }} copy">
+    <div class="fee-voucher-copy-label">{{ copy }} copy</div>
+    <header class="fee-voucher-brand">
+      <img src="{{ url_for('static', filename='assets/green-school-logo.png') }}" width="52" height="52" alt="Green School crest">
+      <div><h2>Green School</h2><p>School Management ERP</p></div>
+    </header>
+    <dl class="fee-voucher-reference">
+      <div><dt>Voucher No.</dt><dd>{{ invoice.invoice_no }}</dd></div>
+      <div><dt>Due date</dt><dd>{{ due }}</dd></div>
+    </dl>
+    <dl class="fee-voucher-student">
+      <div><dt>Student</dt><dd>{{ student.first_name }} {{ student.last_name or '' }}</dd></div>
+      <div><dt>Admission No.</dt><dd>{{ student.admission_no }}</dd></div>
+      <div><dt>Father / Guardian</dt><dd>{{ student.father_name or (student.parent.name if student.parent else '-') }}</dd></div>
+      <div><dt>Class</dt><dd>{{ student.class_room.name ~ ' - ' ~ student.class_room.section if student.class_room else '-' }}</dd></div>
+    </dl>
+    <table class="fee-voucher-items">
+      <thead><tr><th scope="col">Fee item</th><th scope="col">PKR</th></tr></thead>
+      <tbody>
+        {% for item in items %}<tr><td>{{ item.description }}</td><td>{{ '{:,.2f}'.format(item.amount) }}</td></tr>{% endfor %}
+        {% if invoice.paid %}<tr><td>Already paid</td><td>{{ '{:,.2f}'.format(invoice.paid) }}</td></tr>{% endif %}
+      </tbody>
+      <tfoot><tr><th scope="row">Total Payable</th><td>{{ '{:,.2f}'.format(invoice.amount - invoice.paid) }}</td></tr></tfoot>
+    </table>
+    <footer class="fee-voucher-footer">
+      <p>Computer-generated voucher</p>
+      <div>Cashier / Bank signature</div>
+    </footer>
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}

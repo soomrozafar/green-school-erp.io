@@ -1,0 +1,11 @@
+{% extends 'base.html' %}{% block title %}Edit {{model_label}}{% endblock %}{% block page_heading %}Edit {{model_label}}{% endblock %}{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3"><div><span class="eyebrow">ADMIN · EDIT RECORD</span><h3 class="fw-bold mb-0">{{model_label}} #{{obj.id}}</h3></div><a class="btn btn-outline-primary" href="{{url_for('admin.data_edit_list',model_key=model_key)}}"><i class="bi bi-arrow-left me-1"></i>Back to List</a></div>
+<form method="post" class="card erp-card"><div class="card-body row g-3">
+{% for f in fields %}<div class="col-md-6"><label class="form-label">{{f.label}}{% if f.required %} *{% endif %}</label>
+{% if f.fk and choices.get(f.name) %}<select class="form-select" name="{{f.name}}" {% if f.required %}required{% endif %}><option value="">Select...</option>{% for item in choices[f.name] %}<option value="{{item.id}}" {% if f.value==item.id %}selected{% endif %}>{{item.id}}{% if item.name %} — {{item.name}}{% elif item.employee_no %} — {{item.employee_no}}{% elif item.admission_no %} — {{item.admission_no}}{% elif item.username %} — {{item.username}}{% endif %}</option>{% endfor %}</select>
+{% elif f.type=='textarea' %}<textarea class="form-control" name="{{f.name}}" rows="3">{{f.value or ''}}</textarea>
+{% elif f.type=='checkbox' %}<div class="form-check form-switch mt-2"><input class="form-check-input" type="checkbox" name="{{f.name}}" value="1" {% if f.value %}checked{% endif %}><label class="form-check-label">Enabled</label></div>
+{% else %}<input class="form-control" type="{{f.type if f.type in ['date','datetime-local','number','email'] else 'text'}}" name="{{f.name}}" value="{% if f.type=='datetime-local' and f.value %}{{f.value.strftime('%Y-%m-%dT%H:%M')}}{% else %}{{f.value or ''}}{% endif %}" {% if f.required %}required{% endif %} {% if f.type=='number' %}step="any"{% endif %}>{% endif %}</div>{% endfor %}
+{% if is_user %}<div class="col-md-6"><label class="form-label">New Password</label><input class="form-control" type="password" name="new_password" minlength="8" placeholder="Leave blank to keep current password"></div>{% endif %}
+<div class="col-12"><hr><button class="btn btn-primary"><i class="bi bi-check2-circle me-1"></i>Save Changes</button></div></div></form>
+{% endblock %}

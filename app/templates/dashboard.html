@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | Green School ERP{% endblock %}
+{% block header_description %}Welcome back, {{ current_user.username }}.{% endblock %}
+{% block header_action %}
+  {% if 'admission' in assistant_actions(current_user.role) %}<a class="workspace-hero-action" href="{{ url_for('students.new_student') }}"><i class="bi bi-plus-lg" aria-hidden="true"></i> New admission</a>{% endif %}
+{% endblock %}
+{% block content %}
+{% set actions = assistant_actions(current_user.role) %}
+<section class="workspace-kpis" aria-label="School metrics">
+  {% set metrics = [
+    ('Active students', '{:,}'.format(active_students), 'people', '{:,} enrolled records'.format(students)),
+    ('Attendance', (attendance_pct ~ '%') if attendance_total else '—', 'calendar-check', '{:,} attendance entries'.format(attendance_total)),
+    ('Teachers', '{:,}'.format(teachers), 'person-workspace', '{:,} employee records'.format(employees))
+  ] %}
+  {% if finance %}{% set metrics = metrics + [('Outstanding fees', 'PKR {:,.0f}'.format(finance.outstanding), 'wallet2', '{:,} invoices'.format(finance.invoice_count))] %}{% endif %}
+  {% for label, value, icon, detail in metrics %}
+  <article class="workspace-stat">
+    <span class="workspace-stat-icon"><i class="bi bi-{{ icon }}" aria-hidden="true"></i></span>
+    <div><h2>{{ label }}</h2><strong>{{ value }}</strong><p>{{ detail }}</p></div>
+  </article>
+  {% endfor %}
+</section>
+
+{% if actions %}
+<section class="workspace-panel workspace-shortcuts">
+  <h2>Quick actions</h2>
+  <div>
+    {% for key, icon in [('attendance','calendar-check'), ('payment','cash-stack'), ('students','people'), ('vouchers','receipt'), ('reports','bar-chart')] %}
+    {% if key in actions %}<a href="{{ url_for(actions[key][2]) }}"><i class="bi bi-{{ icon }}" aria-hidden="true"></i>{{ actions[key][1] }}<i class="bi bi-arrow-up-right" aria-hidden="true"></i></a>{% endif %}
+    {% endfor %}
+    <button type="button" data-assistant-open><i class="bi bi-stars" aria-hidden="true"></i>Ask the assistant<i class="bi bi-arrow-up-right" aria-hidden="true"></i></button>
+  </div>
+</section>
+{% endif %}
+
+<div class="workspace-columns">
+  {% if finance %}
+  <section class="workspace-panel">
+    <header><div><h2>Fee collections</h2><p>Last six calendar months</p></div><strong>PKR {{ '{:,.0f}'.format(finance.collections|sum(attribute=1)) }}<small> Collected in period</small></strong></header>
+    <dl class="workspace-chart">
+      {% for month, amount in finance.collections %}
+      <div><dt>{{ month }}</dt><dd><span class="workspace-track"><span style="--fill: {{ (100 * amount / finance.peak)|round(2) }}%"></span></span><span>PKR {{ '{:,.0f}'.format(amount) }}</span></dd></div>
+      {% endfor %}
+    </dl>
+  </section>
+  {% endif %}
+  <section class="workspace-panel">
+    <header><div><h2>Student status</h2><p>{{ '{:,}'.format(students) }} total records</p></div></header>
+    {% if statuses %}
+    <dl class="workspace-chart workspace-status">
+      {% for status, count in statuses %}
+      <div><dt>{{ status }}</dt><dd><span class="workspace-track"><span style="--fill: {{ (100 * count / students)|round(2) }}%"></span></span><span>{{ '{:,}'.format(count) }}</span></dd></div>
+      {% endfor %}
+    </dl>
+    {% else %}<p class="workspace-empty">No student records yet.</p>{% endif %}
+  </section>
+</div>
+
+{% if finance or current_user.role == 'admin' %}
+<div class="workspace-columns workspace-lower">
+  {% if finance %}
+  <section class="workspace-panel">
+    <header><h2>Recent payments</h2><a href="{{ url_for('finance.fees') }}">View invoices <i class="bi bi-arrow-right" aria-hidden="true"></i></a></header>
+    <div class="table-responsive"><table class="table workspace-table">
+      <thead><tr><th scope="col">Receipt</th><th scope="col">Student</th><th scope="col">Amount</th><th scope="col">Date</th></tr></thead>
+      <tbody>{% for p in finance.payments %}
+        <tr><td>{{ p.receipt_no }}</td><td>{{ p.invoice.student.first_name }} {{ p.invoice.student.last_name or '' }}</td><td class="text-nowrap">PKR {{ '{:,.2f}'.format(p.amount) }}</td><td class="text-nowrap">{{ p.paid_at.strftime('%d %b %Y') if p.paid_at else '—' }}</td></tr>
+      {% else %}<tr><td colspan="4" class="workspace-empty">No payments recorded yet.</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </section>
+  {% endif %}
+  {% if current_user.role == 'admin' %}
+  <section class="workspace-panel">
+    <header><h2>Recent activity</h2><a href="{{ url_for('production.audit') }}">Audit log <i class="bi bi-arrow-right" aria-hidden="true"></i></a></header>
+    <ul class="workspace-activity">
+      {% for entry in recent_audit %}
+      <li><span class="activity-dot" aria-hidden="true"></span><div><strong>{{ entry.action }}</strong><span>{{ entry.module or 'System' }}{% if entry.created_at %} · {{ entry.created_at.strftime('%d %b, %H:%M') }}{% endif %}</span></div></li>
+      {% else %}<li class="workspace-empty">No recent activity.</li>{% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

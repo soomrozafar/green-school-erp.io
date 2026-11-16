@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Challan Batch {{ batch.id }}{% endblock %}
+{% block page_heading %}Challan Batch {{ batch.id }}{% endblock %}
+{% block header_description %}{{ invoice_count }} challans for {{ rows|length }} students. {{ batch.created_count }} new invoices created.{% endblock %}
+{% block header_action %}
+{% if invoice_count %}
+<a class="workspace-hero-action" href="{{ url_for('finance.voucher_batch_pdf', batch_id=batch.id) }}"><i class="bi bi-download" aria-hidden="true"></i> Download all PDFs</a>
+{% endif %}
+{% endblock %}
+{% block content %}
+<div class="card mb-3"><div class="card-body">
+  <h2 class="h5">WhatsApp sharing</h2>
+  <p class="mb-1">Download a student's PDF, open their WhatsApp draft, attach the PDF and send it. The PDF contains only that student's challans from this batch.</p>
+  {% if missing_contacts %}<p class="mb-1 text-muted">{{ missing_contacts }} students need a valid student or guardian WhatsApp number.</p>{% endif %}
+  {% if batch.student_count > rows|length %}<p class="mb-1 text-muted">{{ batch.student_count - rows|length }} selected students have no available challans in this batch.</p>{% endif %}
+  <button type="button" class="btn btn-sm btn-outline-primary mt-2" data-assistant-open><i class="bi bi-stars" aria-hidden="true"></i> Ask AI Assistant</button>
+</div></div>
+<div class="card"><div class="table-responsive">
+<table class="table align-middle mb-0">
+  <thead><tr><th>Student</th><th>Challans</th><th>WhatsApp contact</th><th>Actions</th></tr></thead>
+  <tbody>
+  {% for row in rows %}
+    <tr>
+      <td><strong>{{ row.student.first_name }} {{ row.student.last_name or '' }}</strong><br><small>{{ row.student.admission_no }}</small></td>
+      <td>{% for invoice in row.invoices %}<a class="d-block" href="{{ url_for('finance.voucher', invoice_id=invoice.id) }}">{{ invoice.invoice_no }}</a>{% endfor %}</td>
+      <td>{% if row.phone %}{{ row.recipient }} · +{{ row.phone }}{% else %}<span class="text-muted">Number missing or invalid</span>{% endif %}</td>
+      <td><div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('finance.voucher_batch_pdf', batch_id=batch.id, student_id=row.student.id) }}">Student PDF</a>
+        {% if row.whatsapp %}<a class="btn btn-sm btn-success" href="{{ row.whatsapp }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-whatsapp" aria-hidden="true"></i> Open WhatsApp</a>{% endif %}
+      </div></td>
+    </tr>
+  {% else %}<tr><td colspan="4">No available challans.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div></div>
+{% endblock %}

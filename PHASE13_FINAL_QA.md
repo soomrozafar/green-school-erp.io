@@ -1,0 +1,30 @@
+# Phase 13 Final QA Checklist
+
+- [ ] Fresh Windows setup succeeds with `pip install -r requirements.txt`
+- [ ] Admin login works
+- [ ] Admin password can be changed
+- [ ] Role/permission restrictions work
+- [ ] Student CRUD works
+- [ ] Parent/guardian records work
+- [ ] Attendance works
+- [ ] Exams/results/report card work
+- [ ] Fee invoice/payment/receipt works
+- [ ] Payroll works
+- [ ] Transport assignment works
+- [ ] Hostel allocation respects capacity
+- [ ] Inventory IN/OUT respects stock
+- [ ] Library issue/return works
+- [ ] Excel exports open correctly
+- [ ] PDF report card renders correctly
+- [ ] Dashboard charts load
+- [ ] Audit/login history records activity
+- [ ] Backup download works for SQLite
+- [ ] `/api/v1/health` returns HTTP 200
+- [ ] `/api/v1/summary` requires authentication
+- [ ] `/api/v1/metrics` requires authentication
+- [ ] Production secret is not the development fallback
+- [ ] Secure cookies are enabled under HTTPS
+- [ ] Database migrations are reviewed and applied
+- [ ] Production database backups are scheduled
+- [ ] Nginx/HTTPS or equivalent reverse proxy is configured
+- [ ] Application logs are retained and monitored

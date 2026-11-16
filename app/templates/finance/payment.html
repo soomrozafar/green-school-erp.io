@@ -1,0 +1,8 @@
+{% extends 'base.html' %}{% block title %}Fee Payment{% endblock %}{% block content %}
+
+<div class="card shadow-sm"><div class="card-body"><form method="post" class="row g-3">
+<div class="col-md-6"><label class="form-label">Invoice</label><select class="form-select" name="invoice_id" required>{% for i in invoices %}<option value="{{i.id}}">{{i.invoice_no}} — {{i.student.first_name}} {{i.student.last_name or ''}} — Due {{'%.2f'|format(i.amount-i.paid)}}</option>{% endfor %}</select></div>
+<div class="col-md-3"><label class="form-label">Amount</label><input class="form-control" type="number" step="0.01" min="0.01" name="amount" required></div>
+<div class="col-md-3"><label class="form-label">Payment Method</label><select class="form-select" name="payment_method"><option>Cash</option><option>Bank Transfer</option><option>Cheque</option><option>Card</option></select></div>
+<div class="col-md-6"><label class="form-label">Reference</label><input class="form-control" name="reference" placeholder="Transaction / cheque no."></div>
+<div class="col-12"><button class="btn btn-primary">Save Payment & Generate Receipt</button></div></form></div></div>{% endblock %}

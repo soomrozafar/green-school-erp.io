@@ -1,0 +1,26 @@
+{% extends 'base.html' %}{% block title %}Data Integrity{% endblock %}{% block content %}
+<div class="mb-3"><p class="text-muted mb-0">Read-only checks for common ERP data quality problems.</p></div>
+<div class="card shadow-sm"><div class="card-body p-0"><div class="table-responsive"><table class="table table-hover mb-0"><thead><tr><th>Check</th><th>Status</th><th>Guidance</th></tr></thead><tbody>{% for name, ok, note in checks %}<tr><td>{{ name }}</td><td>{% if ok %}<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>PASS</span>{% else %}<span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>REVIEW</span>{% endif %}</td><td>{{ note }}</td></tr>{% endfor %}</tbody></table></div></div></div>
+<section class="card mt-3"><div class="card-body">
+  <h2 class="h5">Request for Codex</h2>
+  <p class="text-muted">Copy this request into your Codex chat to review the findings and test a fix.</p>
+  <textarea class="form-control font-monospace" id="codexRequest" rows="7" readonly aria-label="Development request">{{ codex_request }}</textarea>
+  <button type="button" id="copyCodexRequest" class="btn btn-outline-primary mt-2">Copy request</button>
+  <span id="copyCodexStatus" class="ms-2" role="status"></span>
+</div></section>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+document.querySelector('#copyCodexRequest').addEventListener('click', async () => {
+  const request = document.querySelector('#codexRequest');
+  const status = document.querySelector('#copyCodexStatus');
+  try {
+    await navigator.clipboard.writeText(request.value);
+    status.textContent = 'Copied.';
+  } catch {
+    request.select();
+    status.textContent = 'Press Ctrl+C to copy the selected request.';
+  }
+});
+</script>
+{% endblock %}

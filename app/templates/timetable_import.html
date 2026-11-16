@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Import timetable{% endblock %}
+{% block page_heading %}Import timetable{% endblock %}
+{% block header_description %}Build a draft from an existing timetable and review it before saving.{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="card p-3 mb-3">
+  <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+  <div class="mb-3">
+    <label for="schedule-file" class="form-label">Upload timetable</label>
+    <input id="schedule-file" name="source_file" type="file" class="form-control" accept=".docx,.xlsx,.csv,.txt,.tsv,.png,.jpg,.jpeg">
+    <small class="text-muted">Word, Excel, CSV, text, PNG or JPEG. Up to 5 MB.</small>
+  </div>
+  <div class="mb-3">
+    <label class="form-label" for="schedule-text">Or paste the timetable below</label>
+    <textarea class="form-control font-monospace" id="schedule-text" name="timetable_text" rows="7" maxlength="32000" placeholder="Day,Class,Subject,Teacher,Start,End,Room">{{ text }}</textarea>
+    <small class="text-muted">Example: Monday,Class II - A,Math,EMP-00001,08:30,09:15,Room 2. Use names or IDs already in ERP.</small>
+  </div>
+  <button class="btn btn-primary" type="submit">Review draft</button>
+</form>
+{% if errors %}
+<div class="alert alert-warning"><h2 class="h6">Fix these entries before saving</h2><ul class="mb-0">{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul></div>
+{% endif %}
+{% if reviewed %}
+<div class="card mb-3"><div class="card-header">Draft preview</div><div class="table-responsive">
+  <table class="table mb-0">
+    <thead><tr><th>Day</th><th>Time</th><th>Class</th><th>Subject</th><th>Teacher</th><th>Room</th><th>Review</th></tr></thead>
+    <tbody>{% for row in reviewed %}<tr>
+      <td>{{ row.day }}</td><td>{{ row.start_time }}–{{ row.end_time }}</td><td>{{ row.class_name }}</td>
+      <td>{{ row.subject_name }}</td><td>{{ row.teacher_name }}</td><td>{{ row.room or '—' }}</td>
+      <td>{{ 'Already scheduled' if row.duplicate else 'New entry' }}{% if row.allocation %}<br><small>Teacher has no current allocation for this subject</small>{% endif %}</td>
+    </tr>{% endfor %}</tbody>
+  </table>
+</div></div>
+{% endif %}
+{% if token %}
+<form method="post" class="card p-3">
+  <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+  <input type="hidden" name="action" value="save">
+  <input type="hidden" name="draft" value="{{ token }}">
+  <label class="form-check mb-3"><input class="form-check-input" type="checkbox" name="allocate" value="1"> Also add missing teacher-subject allocations shown in the preview</label>
+  <button type="submit" class="btn btn-primary">Save reviewed timetable</button>
+</form>
+{% endif %}
+{% endblock %}

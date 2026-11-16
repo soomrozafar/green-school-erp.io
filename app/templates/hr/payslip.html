@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block page_heading %}Payslip{% endblock %}
+{% block content %}
+<div class="d-print-none mb-3"><button class="btn btn-primary" type="button" onclick="window.print()">Print Payslip</button></div>
+<section class="card erp-card"><div class="card-body">
+<h2 class="h4">Green School · {{record.month}}</h2>
+<p>{{record.employee.name}} · {{record.employee.employee_no}} · {{record.status}}</p>
+{% if record.status != 'Paid' %}<p class="text-muted">Payment pending</p>{% endif %}
+<table class="table"><thead><tr><th>Pay component</th><th class="text-end">PKR</th></tr></thead><tbody>
+<tr><th scope="row">Basic salary</th><td class="text-end">{{'%.2f'|format(record.basic_salary or 0)}}</td></tr>
+{% for key in earnings + deductions %}{% set amount = record|attr(key) %}{% if amount %}<tr><th scope="row">{{key|replace('_', ' ')|title}}</th><td class="text-end">{{'-' if key in deductions else ''}}{{'%.2f'|format(amount)}}</td></tr>{% endif %}{% endfor %}
+<tr><th scope="row">Gross pay</th><td class="text-end">{{'%.2f'|format(record.gross_salary or 0)}}</td></tr>
+<tr><th scope="row">Total deductions</th><td class="text-end">{{'%.2f'|format(record.deductions or 0)}}</td></tr>
+<tr><th scope="row">Net pay</th><td class="text-end fw-bold">{{'%.2f'|format(record.net_salary or 0)}}</td></tr>
+</tbody></table>
+<div>{{record.payment_method or ''}}{% if record.payment_reference %} · {{record.payment_reference}}{% endif %}{% if record.paid_at %} · {{record.paid_at.date()}}{% endif %}</div>
+</div></section>
+{% endblock %}

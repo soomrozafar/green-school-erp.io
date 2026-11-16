@@ -1,0 +1,4 @@
+{% extends 'base.html' %}{% block title %}Audit Log{% endblock %}{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3"><div><p class="text-muted mb-0">Administrative activity history.</p></div></div>
+<div class="card shadow-sm"><div class="card-body"><div class="table-responsive"><table class="table table-hover align-middle"><thead><tr><th>Date/Time</th><th>User</th><th>Module</th><th>Action</th><th>Details</th></tr></thead><tbody>{% for x in logs.items %}<tr><td>{{ x.created_at.strftime('%Y-%m-%d %H:%M') if x.created_at else '' }}</td><td>{{ x.user.username if x.user else 'System' }}</td><td>{{ x.module or '-' }}</td><td><span class="badge bg-secondary">{{ x.action }}</span></td><td>{{ x.details or '-' }}</td></tr>{% else %}<tr><td colspan="5" class="text-center text-muted py-4">No audit activity recorded.</td></tr>{% endfor %}</tbody></table></div></div></div>
+{% endblock %}

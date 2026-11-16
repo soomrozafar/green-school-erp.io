@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}Admission Reports{% endblock %}
+{% block page_heading %}Admission Reports{% endblock %}
+{% block header_description %}Admission officers can view only student/admission information.{% endblock %}
+{% block content %}
+
+<div class="card erp-card mb-4"><div class="card-body"><form class="row g-2"><div class="col-md-4"><select class="form-select" name="status"><option value="">All statuses</option>{% for x in statuses %}<option value="{{x}}" {% if selected_status==x %}selected{% endif %}>{{x}}</option>{% endfor %}</select></div><div class="col-md-4"><select class="form-select" name="class_id"><option value="">All classes</option>{% for c in classes %}<option value="{{c.id}}" {% if selected_class|string==c.id|string %}selected{% endif %}>{{c.name}} - {{c.section}}</option>{% endfor %}</select></div><div class="col-md-2"><button class="btn btn-primary w-100">Filter</button></div></form></div></div>
+<div class="card erp-card"><div class="card-header"><strong>Admission Records</strong><span class="badge text-bg-light float-end">{{rows|length}} shown</span></div><div class="table-responsive"><table class="table table-hover mb-0"><thead><tr><th>Student Code</th><th>Student</th><th>Father / Guardian</th><th>Class</th><th>Admission Date</th><th>Status</th></tr></thead><tbody>{% for s in rows %}<tr><td>{{s.admission_no}}</td><td>{{s.first_name}} {{s.last_name or ''}}</td><td>{{s.father_name or (s.parent.name if s.parent else '-')}}</td><td>{{s.class_room.name ~ ' - ' ~ s.class_room.section if s.class_room else '-'}}</td><td>{{s.admission_date.strftime('%d-%m-%Y') if s.admission_date else '-'}}</td><td>{{s.status}}</td></tr>{% else %}<tr><td colspan="6" class="text-center p-4 text-muted">No records found.</td></tr>{% endfor %}</tbody></table></div></div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% block title %}Modules{% endblock %}{% block page_heading %}System Modules & Integrations{% endblock %}{% block content %}
+<form method="post" class="card p-4"><input type="hidden" name="csrf_token" value="{{session.get('csrf_token')}}"><h4>Activate / Deactivate Modules</h4><p class="text-muted">Disabled modules disappear from navigation and are blocked server-side.</p><div class="row g-3">{% for key,label in [('hostel','Hostel / Boarding'),('mess','Mess / Dining'),('transport','Transport'),('inventory','Inventory'),('library','Library'),('whatsapp','WhatsApp Integration'),('bank_integration','Bank Integration')] %}<div class="col-md-6"><div class="form-check form-switch border rounded p-3"><input class="form-check-input ms-0 me-2" type="checkbox" name="{{key}}" value="1" {% if settings[key]=='1' %}checked{% endif %}><label class="form-check-label">{{label}}</label></div></div>{% endfor %}</div><button class="btn btn-primary mt-4">Save Module Settings</button></form>
+<form method="post" action="{{url_for('admin.communication_contact')}}" class="card erp-card mt-3"><div class="card-body">
+<input type="hidden" name="csrf_token" value="{{session.csrf_token}}">
+<h2 class="h5">Administrator WhatsApp</h2>
+<label for="support-number" class="form-label">School WhatsApp number</label>
+<input id="support-number" class="form-control mb-2" type="tel" name="whatsapp_number" value="{{whatsapp_contact}}" placeholder="+92…" maxlength="35">
+<p class="small text-muted">Students, parents and teachers can use this number to contact the school. Leave blank to hide the link.</p>
+<button class="btn btn-primary">Save WhatsApp Contact</button>
+</div></form>
+{% endblock %}

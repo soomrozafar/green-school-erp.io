@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Login · Green School ERP{% endblock %}
+{% block public %}
+<div class="psg-login-shell">
+  <section class="workspace-login-photo" aria-label="Green School">
+    <div class="workspace-login-brand"><img src="{{ url_for('static', filename='assets/green-school-logo.png') }}" alt="" width="52" height="52"></div>
+    <div class="workspace-login-copy"><p>School Management ERP</p><h1>Green School</h1></div>
+  </section>
+
+  <section class="psg-login-panel">
+    <div class="psg-login-card">
+      <div class="psg-mobile-logo"><img src="{{ url_for('static', filename='assets/green-school-logo.png') }}" alt="Green School"></div>
+      <div class="psg-login-heading">
+        <span class="psg-overline">SCHOOL MANAGEMENT ERP</span>
+        <h2>Welcome back</h2>
+        <p>Sign in to continue to your school dashboard.</p>
+      </div>
+
+      {% with messages=get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} psg-login-alert"><i class="bi bi-exclamation-circle me-2"></i>{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <form method="post" class="psg-login-form" autocomplete="on">
+        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+        <div class="psg-field">
+          <label for="username">Username</label>
+          <div class="psg-input-wrap"><i class="bi bi-person"></i><input id="username" class="form-control" name="username" maxlength="80" autocomplete="username" placeholder="Enter your username" required autofocus></div>
+        </div>
+        <div class="psg-field">
+          <label for="password">Password</label>
+          <div class="psg-input-wrap"><i class="bi bi-lock"></i><input id="password" class="form-control" type="password" name="password" maxlength="4096" autocomplete="current-password" placeholder="Enter your password" required><button class="psg-password-toggle" type="button" id="togglePassword" aria-label="Show password"><i class="bi bi-eye"></i></button></div>
+        </div>
+        <input type="hidden" name="latitude">
+        <input type="hidden" name="longitude">
+        <input type="hidden" name="accuracy">
+        <button type="button" class="btn btn-outline-primary btn-sm mb-2" id="campusLocation"><i class="bi bi-geo-alt" aria-hidden="true"></i> Share campus location (teachers)</button>
+        <p class="small" id="locationStatus" role="status"></p>
+        <button class="psg-signin" type="submit"><span>Sign In to ERP</span><i class="bi bi-arrow-right"></i></button>
+      </form>
+
+      <div class="psg-login-footer">Green School ERP</div>
+    </div>
+  </section>
+</div>
+<script>
+(function(){
+  const locationButton = document.getElementById('campusLocation');
+  const locationStatus = document.getElementById('locationStatus');
+  locationButton.addEventListener('click', () => {
+    const fields = locationButton.form.elements;
+    for (const key of ['latitude', 'longitude', 'accuracy']) fields[key].value = '';
+    if (!window.isSecureContext || !navigator.geolocation) {
+      locationStatus.textContent = 'Location requires HTTPS. Open the secure ERP link.';
+      return;
+    }
+    locationButton.disabled = true;
+    locationStatus.textContent = 'Checking location…';
+    navigator.geolocation.getCurrentPosition(({coords}) => {
+      for (const key of ['latitude', 'longitude', 'accuracy']) fields[key].value = coords[key];
+      locationStatus.textContent = 'Location ready. Sign in to continue.';
+      locationButton.disabled = false;
+    }, () => {
+      locationStatus.textContent = 'Location unavailable. Allow precise location and try again.';
+      locationButton.disabled = false;
+    }, {enableHighAccuracy: true, maximumAge: 0, timeout: 15000});
+  });
+  const pass=document.getElementById('password'), toggle=document.getElementById('togglePassword');
+  toggle.addEventListener('click',()=>{const visible=pass.type==='text';pass.type=visible?'password':'text';toggle.innerHTML=visible?'<i class="bi bi-eye"></i>':'<i class="bi bi-eye-slash"></i>';toggle.setAttribute('aria-label',visible?'Show password':'Hide password')});
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block page_heading %}Teacher Management{% endblock %}
+{% block header_description %}Teachers are employees. Enter employee data once, then assign subjects here.{% endblock %}
+{% block header_action %}<a class="workspace-hero-action" href="{{url_for('academics.import_allocations')}}"><i class="bi bi-upload" aria-hidden="true"></i> Import Subject Assignments</a>{% endblock %}
+{% block content %}
+
+<div class="row g-4">
+<div class="col-lg-5"><div class="card erp-card"><div class="card-header">Assign Subject to Teacher</div><div class="card-body">
+<form method="post" id="teacherAssignForm">
+<label class="form-label">Search / Select Teacher *</label>
+<select class="form-select mb-3" name="employee_id" id="teacherEmployee" required><option value="">Search teacher...</option>{% for e in employees %}<option value="{{e.id}}">{{e.employee_no}} — {{e.name}}{% if e.designation %} · {{e.designation }}{% endif %}</option>{% endfor %}</select>
+<div class="small text-muted mb-2">Employee information will be fetched automatically. No duplicate teacher entry.</div>
+<label class="form-label">Subject(s) *</label>
+<div class="border rounded p-3" style="max-height:280px;overflow:auto">{% for s in subjects %}<label class="d-flex align-items-center gap-2 py-1"><input type="checkbox" name="subject_ids" value="{{s.id}}"> <span>{{s.name}}{% if s.code %} ({{s.code}}){% endif %}</span></label>{% else %}<div class="text-muted">Add subjects first.</div>{% endfor %}</div>
+<button class="btn btn-primary w-100 mt-3"><i class="bi bi-link-45deg me-1"></i>Save Teacher Subjects</button>
+</form></div></div></div>
+<div class="col-lg-7"><div class="card erp-card"><div class="card-header">Teacher Directory</div><form method="get" class="card-body d-flex gap-2"><input name="q" value="{{q}}" class="form-control" placeholder="Name or employee number" aria-label="Search teacher directory" data-record-search aria-controls="teacher-directory"><button class="btn btn-outline-primary">Search</button></form><div class="table-responsive"><table id="teacher-directory" class="table align-middle mb-0"><thead><tr><th>Employee</th><th>Teacher</th><th>Designation</th><th>Subjects</th><th>Status</th><th>Actions</th></tr></thead><tbody>{% for t in teachers %}<tr><td>{{t.employee.employee_no}}</td><td><div class="d-flex align-items-center gap-2">{% if t.employee.photo_path %}<img src="{{url_for('static',filename=t.employee.photo_path)}}" class="avatar-sm" width="25" height="25" alt="">{% else %}<span class="avatar-sm avatar-placeholder"><i class="bi bi-person"></i></span>{% endif %}<span>{{t.employee.name}}</span></div></td><td>{{t.employee.designation or '-'}}</td><td>{% for sub in t.subjects %}<span class="badge text-bg-primary me-1 mb-1">{{sub.name}}</span>{% else %}-{% endfor %}</td><td>{{t.status}}</td><td class="text-nowrap"><a class="btn btn-sm btn-outline-primary" href="{{url_for('academics.teacher_record', teacher_id=t.id)}}">View</a> <a class="btn btn-sm btn-outline-primary" href="{{url_for('academics.teacher_record', teacher_id=t.id, edit=1)}}">Edit</a></td></tr>{% else %}<tr><td colspan="6" class="text-center text-muted py-4">No teachers assigned yet. Add the employee first.</td></tr>{% endfor %}</tbody></table></div></div></div>
+</div>
+{% endblock %}
+{% block extra_scripts %}<script>document.getElementById('teacherEmployee')?.addEventListener('change', async function(){const id=this.value;if(!id)return;try{const r=await fetch('{{url_for("academics.teacher_subjects")}}?employee_id='+encodeURIComponent(id));const d=await r.json();document.querySelectorAll('input[name="subject_ids"]').forEach(x=>x.checked=(d.subject_ids||[]).includes(Number(x.value)));}catch(e){}});</script>{% endblock %}

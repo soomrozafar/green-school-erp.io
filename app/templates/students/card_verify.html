@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block page_heading %}Student Card Verification{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-md-7"><div class="card erp-card text-center"><div class="card-body p-5"><img src="{{url_for('static',filename='assets/green-school-logo.png')}}" style="width:70px" class="mb-3"><h3 class="fw-bold">GREEN SCHOOL</h3><div class="text-success fw-semibold mb-4"><i class="bi bi-patch-check-fill"></i> Student Record Verified</div><h4>{{student.first_name}} {{student.last_name or ''}}</h4><p class="mb-1"><b>Student ID:</b> {{student.admission_no}}</p><p class="mb-1"><b>Class:</b> {{student.class_room.name ~ ' - ' ~ student.class_room.section if student.class_room else '-'}}</p><p class="mb-3"><b>Status:</b> {{student.status}}</p><small class="text-muted">Green School · This page provides basic verification information only.</small></div></div></div></div>
+{% endblock %}

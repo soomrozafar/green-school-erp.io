@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3"><span class="text-muted">Admin only</span></div>
+<div class="card shadow-sm"><div class="card-body"><div class="table-responsive"><table class="table table-sm align-middle"><thead><tr><th>Role</th><th>Module</th><th>Action</th><th>Allowed</th><th></th></tr></thead><tbody>
+{% for role in roles %}{% for module in modules %}{% for action in actions %}{% set ns = namespace(p=None) %}{% for p in permissions %}{% if p.role==role and p.module==module and p.action==action %}{% set ns.p=p %}{% endif %}{% endfor %}
+<tr><form method="post"><td>{{ role }}</td><td>{{ module }}</td><td>{{ action }}</td><td><input type="checkbox" name="allowed" value="1" {% if ns.p and ns.p.allowed %}checked{% endif %}></td><td><input type="hidden" name="role" value="{{ role }}"><input type="hidden" name="module" value="{{ module }}"><input type="hidden" name="action" value="{{ action }}"><button class="btn btn-sm btn-primary">Save</button></td></form></tr>
+{% endfor %}{% endfor %}{% endfor %}
+</tbody></table></div></div></div>{% endblock %}

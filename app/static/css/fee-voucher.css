@@ -1,0 +1,67 @@
+.fee-voucher-sheet {
+  --voucher-ink: #172f29;
+  --voucher-green: #155b49;
+  --voucher-muted: #405e55;
+  --voucher-border: #cfddd5;
+  --voucher-tint: #edf5ef;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 1rem;
+  border: 1px solid var(--voucher-border);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--voucher-ink);
+  font-size: .8125rem;
+}
+.fee-voucher-copy { min-width: 0; padding: 14px; }
+.fee-voucher-copy + .fee-voucher-copy { border-inline-start: 1px dashed #8da49a; }
+.fee-voucher-copy-label {
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--voucher-border);
+  color: var(--voucher-green);
+  font-size: .6875rem;
+  font-weight: 750;
+  letter-spacing: .08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+.fee-voucher-brand { display: flex; align-items: center; gap: 10px; padding: 12px 0; }
+.fee-voucher-brand img { flex: none; width: 48px; height: 48px; object-fit: contain; }
+.fee-voucher-brand h2 { margin: 0; font-size: 1rem; line-height: 1.2; color: var(--voucher-green); }
+.fee-voucher-brand p { margin: 3px 0 0; font-size: .6875rem; line-height: 1.35; color: var(--voucher-muted); }
+.fee-voucher-reference, .fee-voucher-student {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px 10px;
+  padding: 8px 9px;
+  margin: 0 0 8px;
+  border: 1px solid var(--voucher-border);
+  border-radius: 5px;
+}
+.fee-voucher-reference { background: var(--voucher-tint); }
+.fee-voucher-copy dt { color: var(--voucher-muted); font-size: .6875rem; font-weight: 500; }
+.fee-voucher-copy dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; }
+.fee-voucher-items { width: 100%; border-collapse: collapse; }
+.fee-voucher-items th, .fee-voucher-items td { padding: 6px 7px; border-bottom: 1px solid var(--voucher-border); overflow-wrap: anywhere; }
+.fee-voucher-items thead, .fee-voucher-items tfoot { background: var(--voucher-tint); color: var(--voucher-green); }
+.fee-voucher-items tfoot { font-weight: 800; }
+.fee-voucher-items td:last-child, .fee-voucher-items thead th:last-child { text-align: right; white-space: nowrap; }
+.fee-voucher-footer { margin-top: 9px; color: var(--voucher-muted); font-size: .6875rem; }
+.fee-voucher-footer p { margin: 0; }
+.fee-voucher-footer div { margin-top: 25px; width: min(100%, 150px); padding-top: 4px; border-top: 1px solid var(--voucher-muted); }
+
+@media screen and (max-width: 980px) {
+  .fee-voucher-sheet { grid-template-columns: 1fr; }
+  .fee-voucher-copy + .fee-voucher-copy { border-inline-start: 0; border-block-start: 1px dashed #8da49a; }
+}
+@media print {
+  @page { size: A4 portrait; margin: 8mm; }
+  .workspace-topbar, .workspace-sidebar, .workspace-module-hero, .workspace-assistant, .no-print { display: none !important; }
+  .workspace-layout { display: block !important; min-height: 0; background: #fff; }
+  .fee-voucher-sheet { font-size: 8pt; margin: 0; border-radius: 0; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .fee-voucher-copy { padding: 3mm; }
+  .fee-voucher-copy-label, .fee-voucher-copy dt, .fee-voucher-brand p, .fee-voucher-footer { font-size: 7pt; }
+  .fee-voucher-brand h2 { font-size: 9pt; }
+  .fee-voucher-brand img { width: 11mm; height: 11mm; }
+  .fee-voucher-items tr { break-inside: avoid; }
+}

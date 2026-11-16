@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Timetable{% endblock %}
+{% block header_action %}
+{% if can_manage %}<a class="workspace-hero-action" href="{{ url_for('timetable.import_schedule') }}"><i class="bi bi-stars" aria-hidden="true"></i> Import timetable</a>{% endif %}
+{% endblock %}
+{% block content %}
+{% if can_manage %}
+<form method="post" class="card p-3 mb-4">
+  <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+  <div class="row g-2">
+    <label class="col-md-4">Class<select class="form-select" name="class_id" required>{% for c in classes %}<option value="{{ c.id }}">{{ c.name }} - {{ c.section }}</option>{% endfor %}</select></label>
+    <label class="col-md-4">Subject<select class="form-select" name="subject_id" required>{% for s in subjects %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}</select></label>
+    <label class="col-md-4">Teacher<select class="form-select" name="teacher_id" required>{% for t in teachers if t.employee %}<option value="{{ t.id }}">{{ t.employee.name }}</option>{% endfor %}</select></label>
+    <label class="col-md-3">Day<select class="form-select" name="day">{% for day in days %}<option>{{ day }}</option>{% endfor %}</select></label>
+    <label class="col-md-2">Start<input class="form-control" type="time" name="start_time" required></label>
+    <label class="col-md-2">End<input class="form-control" type="time" name="end_time" required></label>
+    <label class="col-md-3">Room<input class="form-control" name="room" maxlength="50"></label>
+    <div class="col-md-2 d-flex align-items-end"><button class="btn btn-primary w-100" type="submit">Save entry</button></div>
+  </div>
+</form>
+{% endif %}
+<div class="card table-responsive">
+<table class="table mb-0">
+  <thead><tr><th>Day</th><th>Time</th><th>Class</th><th>Subject</th><th>Teacher</th><th>Room</th></tr></thead>
+  <tbody>{% for t in timetable %}<tr>
+    <td>{{ t.day }}</td><td>{{ t.start_time }}–{{ t.end_time }}</td>
+    <td>{{ t.class_room.name }} {{ t.class_room.section }}</td><td>{{ t.subject.name }}</td>
+    <td>{{ t.teacher.employee.name if t.teacher and t.teacher.employee else '—' }}</td><td>{{ t.room or '—' }}</td>
+  </tr>{% else %}<tr><td colspan="6">No timetable entries yet.</td></tr>{% endfor %}</tbody>
+</table>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "library/workspace.html" %}
+{% set metrics = [('On loan', totals[0]), ('Overdue', totals[1]), ('Returned', totals[2])] %}
+{% set search_hint = 'Book title, student or admission no.' %}
+{% set filter_name = 'status' %}
+{% set choices = [('', 'All loans'), ('Issued', 'On loan'), ('overdue', 'Overdue'), ('Returned', 'Returned')] %}
+{% set result_label = 'loans' %}
+{% block page_heading %}Library Circulation{% endblock %}
+{% block header_action %}<a class="workspace-hero-action" href="{{ url_for('library.books') }}"><i class="bi bi-book" aria-hidden="true"></i> View Catalogue</a>{% endblock %}
+{% block records %}
+<table class="table align-middle mb-0">
+  <thead><tr><th scope="col">Book / Borrower</th><th scope="col">Issued</th><th scope="col">Due / Returned</th><th scope="col">Status</th><th scope="col">Action</th></tr></thead>
+  <tbody>
+  {% for loan in page.items %}
+    {% set overdue = loan.status == 'Issued' and loan.due_date and loan.due_date < today %}
+    <tr>
+      <td><strong>{{ loan.book.title }}</strong><div class="small text-muted">{{ loan.student.first_name }} {{ loan.student.last_name or '' }} · {{ loan.student.admission_no }}</div></td>
+      <td class="text-nowrap">{{ loan.issue_date.strftime('%d %b %Y') if loan.issue_date else '—' }}</td>
+      <td class="text-nowrap">{% set date = loan.return_date if loan.status == 'Returned' else loan.due_date %}{{ date.strftime('%d %b %Y') if date else '—' }}</td>
+      <td><span class="badge {{ 'text-bg-danger' if overdue else 'text-bg-success' if loan.status == 'Returned' else 'text-bg-light' }}">{{ 'Overdue' if overdue else 'On loan' if loan.status == 'Issued' else loan.status }}</span></td>
+      <td>{% if loan.status == 'Issued' %}<form method="post" action="{{ url_for('operations.library_return', issue_id=loan.id) }}"><input type="hidden" name="csrf_token" value="{{ session.csrf_token }}"><button class="btn btn-sm btn-outline-primary text-nowrap" aria-label="Return {{ loan.book.title }}">Return</button></form>{% endif %}</td>
+    </tr>
+  {% else %}<tr><td colspan="5" class="p-4 text-center text-muted">No loans match your filters.</td></tr>{% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+{% block entry %}
+<h2 class="h5 mb-3"><i class="bi bi-journal-arrow-up me-2" aria-hidden="true"></i>Issue a book</h2>
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+  <div class="mb-3"><label class="form-label" for="book_id">Book</label><select id="book_id" class="form-select" name="book_id" required>
+  <option value="">{{ 'Select a book' if books else 'No available books' }}</option>
+  {% for book in books %}<option value="{{ book.id }}">{{ book.title }} ({{ book.available }} available)</option>{% endfor %}</select></div>
+  <div class="mb-3"><label class="form-label" for="student_id">Student</label><select id="student_id" class="form-select" name="student_id" required>
+  <option value="">{{ 'Select a borrower' if students else 'No active students' }}</option>
+  {% for student in students %}<option value="{{ student.id }}">{{ student.first_name }} {{ student.last_name or '' }} · {{ student.admission_no }}</option>{% endfor %}</select></div>
+  <div class="mb-3"><label class="form-label" for="due_date">Due date</label><input id="due_date" class="form-control" name="due_date" type="date" value="{{ default_due }}" min="{{ today }}" required></div>
+  <button class="btn btn-primary w-100"{% if not books or not students %} disabled{% endif %}>Issue Book</button>
+</form>
+{% endblock %}

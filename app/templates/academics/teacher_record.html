@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block page_heading %}Teacher Record{% endblock %}
+{% block content %}
+<div class="card erp-card mb-3"><div class="card-body">
+  <a href="{{url_for('academics.teachers')}}">Teacher Directory</a>
+  <h2 class="h4 mt-3">{{teacher.employee.name}}</h2>
+  <p>{{teacher.employee.employee_no}} · {{teacher.employee.designation or 'Teacher'}} · {{teacher.status}}</p>
+  <p><strong>Subjects</strong> {{teacher.subjects|map(attribute='name')|join(', ') or 'None assigned'}}</p>
+  {% if not editing %}<a class="btn btn-primary" href="{{url_for('academics.teacher_record', teacher_id=teacher.id, edit=1)}}">Edit Teacher</a>{% endif %}
+</div></div>
+{% if editing %}
+<div class="row g-3 mb-3">
+<div class="col-lg-6"><div class="card erp-card"><form class="card-body" method="post">
+<input type="hidden" name="csrf_token" value="{{session.csrf_token}}">
+<h2 class="h5">Status and subjects</h2>
+<label for="teacher-status" class="form-label">Status</label><select id="teacher-status" name="status" class="form-select mb-3">{% for state in ('Active','Inactive') %}<option{% if teacher.status == state %} selected{% endif %}>{{state}}</option>{% endfor %}</select>
+<fieldset><legend class="h6">Subjects</legend>{% for subject in subjects %}<label class="d-block"><input type="checkbox" name="subject_ids" value="{{subject.id}}"{% if subject in teacher.subjects %} checked{% endif %}> {{subject.name}}</label>{% endfor %}</fieldset>
+<button class="btn btn-primary mt-3" name="action" value="save">Save Changes</button>
+</form></div></div>
+<div class="col-lg-6"><div class="card erp-card"><form class="card-body" method="post">
+<input type="hidden" name="csrf_token" value="{{session.csrf_token}}">
+<h2 class="h5">Transfer a subject</h2>
+<label for="transfer-subject" class="form-label">Subject</label><select id="transfer-subject" name="subject_id" class="form-select mb-3" required><option value="">Select subject</option>{% for subject in teacher.subjects %}<option value="{{subject.id}}">{{subject.name}}</option>{% endfor %}</select>
+<label for="replacement" class="form-label">Replacement teacher</label><select id="replacement" name="replacement_id" class="form-select mb-3" required><option value="">Select teacher</option>{% for item in replacements %}<option value="{{item.id}}">{{item.employee.name}} · {{item.employee.employee_no}}</option>{% endfor %}</select>
+<p class="small text-muted">Transfers the subject and its timetable slots after checking for overlaps.</p>
+<button class="btn btn-outline-primary" name="action" value="transfer">Transfer Subject</button>
+</form></div></div>
+</div>
+{% endif %}
+<div class="card erp-card"><div class="card-header">Timetable assignments</div><div class="table-responsive"><table class="table mb-0"><thead><tr><th>Class</th><th>Subject</th><th>Day</th><th>Time</th></tr></thead><tbody>
+{% for slot in slots %}<tr><td>{{slot.class_room.name}} · {{slot.class_room.section}}</td><td>{{slot.subject.name}}</td><td>{{slot.day}}</td><td>{{slot.start_time}}–{{slot.end_time}}</td></tr>{% else %}<tr><td colspan="4" class="text-muted">No timetable assignments.</td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}

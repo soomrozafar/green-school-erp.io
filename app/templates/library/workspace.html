@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row g-3 mb-4">
+{% for label, value in metrics %}
+  <div class="col-4"><div class="card erp-card h-100 p-3"><span class="text-muted small">{{ label }}</span><strong class="fs-4">{{ value }}</strong></div></div>
+{% endfor %}
+</div>
+<div class="row g-4">
+  <div class="col-xl-8">
+    <section class="card erp-card">
+      <div class="card-body">
+        <form class="row g-2 align-items-end" method="get">
+          <div class="col-sm"><label for="library-search" class="form-label">Search</label><input id="library-search" class="form-control" name="q" value="{{ filters.q }}" maxlength="100" placeholder="{{ search_hint }}"></div>
+          <div class="col-sm-auto"><label for="library-filter" class="form-label">Status</label><select id="library-filter" class="form-select" name="{{ filter_name }}">
+          {% for value, label in choices %}<option value="{{ value }}"{% if filters[filter_name] == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select></div>
+          <div class="col-sm-auto"><button class="btn btn-primary"><i class="bi bi-search me-1" aria-hidden="true"></i>Filter</button>{% if filters.q or filters[filter_name] %} <a href="{{ url_for(request.endpoint) }}" class="btn btn-outline-secondary">Clear</a>{% endif %}</div>
+        </form>
+      </div>
+      <div class="table-responsive">{% block records %}{% endblock %}</div>
+      <div class="card-body d-flex align-items-center justify-content-between gap-2">
+        <span class="small text-muted">{{ page.total }} {{ result_label }}{% if page.pages > 1 %} · Page {{ page.page }} of {{ page.pages }}{% endif %}</span>
+        <nav aria-label="Library pagination">
+          {% if page.has_prev %}<a class="btn btn-sm btn-outline-primary" href="{{ url_for(request.endpoint, page=page.prev_num, **filters) }}">Previous</a>{% endif %}
+          {% if page.has_next %}<a class="btn btn-sm btn-outline-primary" href="{{ url_for(request.endpoint, page=page.next_num, **filters) }}">Next</a>{% endif %}
+        </nav>
+      </div>
+    </section>
+  </div>
+  <div class="col-xl-4"><section class="card erp-card"><div class="card-body">{% block entry %}{% endblock %}</div></section></div>
+</div>
+{% endblock %}

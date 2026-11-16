@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block page_heading %}{{title}} Record{% endblock %}
+{% block content %}
+<section class="card erp-card"><div class="card-body">
+<a href="{{url_for('admin.data_edit_list', model_key=model_key)}}">Back to list</a>
+<dl class="row mt-3">{% for field in fields %}<dt class="col-md-4">{{field.label}}</dt><dd class="col-md-8" style="overflow-wrap:anywhere">{{field.value if field.value is not none else '—'}}</dd>{% endfor %}</dl>
+<a class="btn btn-primary" href="{{url_for(request.endpoint, model_key=model_key, record_id=record.id)}}">Edit Record</a>
+</div></section>
+{% endblock %}

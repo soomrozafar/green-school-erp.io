@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Online Payment Status{% endblock %}
+{% block content %}
+<section class="card"><div class="card-body">
+  <p class="mb-2"><strong>{{ payment.invoice.invoice_no }}</strong> · PKR {{ '{:,.2f}'.format(payment.amount_minor / 100) }}</p>
+  {% if payment.state == 'paid' %}
+    <p class="alert alert-success">Payment confirmed. Receipt {{ payment.receipt.receipt_no }}.</p>
+  {% elif payment.state == 'test_paid' %}
+    <p class="alert alert-success">Sandbox payment confirmed. Your fee balance is unchanged.</p>
+  {% elif payment.state == 'review' %}
+    <p class="alert alert-warning">This payment needs review. Contact Accounts and quote the invoice number before paying again.</p>
+  {% elif payment.state == 'failed' %}
+    <p class="alert alert-warning">Checkout setup failed. Return to your portal to try again.</p>
+  {% else %}
+    <p class="alert alert-info">Waiting for Safepay confirmation. If you already paid, check again before starting another payment.</p>
+    {% if payment.environment == 'sandbox' and payment.state == 'pending' %}
+      <form class="d-inline-block" method="post" action="{{ url_for('online_payments.verify_sandbox', payment_id=payment.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+        <button type="submit" class="btn btn-primary">Verify test payment</button>
+      </form>
+    {% else %}
+      <a class="btn btn-primary" href="{{ url_for('online_payments.status', payment_id=payment.id) }}">Check status</a>
+    {% endif %}
+  {% endif %}
+  <a class="btn btn-outline-primary" href="{{ url_for('portal.index') }}">Back to Student Portal</a>
+</div></section>
+{% endblock %}

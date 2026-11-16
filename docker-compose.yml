@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: schoolerp
+      POSTGRES_USER: schoolerp
+      POSTGRES_PASSWORD: CHANGE_ME_BEFORE_DEPLOYMENT
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    environment:
+      SCHOOL_ERP_SECRET_KEY: ${SCHOOL_ERP_SECRET_KEY:?Set a random SCHOOL_ERP_SECRET_KEY}
+      SCHOOL_ERP_SECURE_COOKIES: "1"
+      SCHOOL_ERP_AUTO_CREATE_DB: "0"
+      SCHOOL_ERP_AUTO_SCHEMA_UPGRADE: "0"
+      DATABASE_URL: postgresql+psycopg://schoolerp:CHANGE_ME_BEFORE_DEPLOYMENT@db:5432/schoolerp
+
+volumes:
+  postgres_data:
