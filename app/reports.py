@@ -9,6 +9,7 @@ from sqlalchemy import String, cast, func, or_
 
 from . import models as m
 from .access import teacher_profile
+from .auth import public_demo_enabled
 from .extensions import db
 from .report_catalogue import REPORTS
 
@@ -17,7 +18,8 @@ reports_bp = Blueprint("reports", __name__, url_prefix="/reports")
 
 def available_reports():
     return {key: spec for key, spec in REPORTS.items()
-            if current_user.role == "admin" or current_user.role in spec.roles}
+            if (current_user.role == "admin" or current_user.role in spec.roles)
+            and (not public_demo_enabled() or key != "login")}
 
 
 def report_query(key, spec, include_bucket=True):

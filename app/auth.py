@@ -87,6 +87,28 @@ def login():
 PUBLIC_DEMO_USERS = {"admin": "admin_demo", "student": "student_demo", "teacher": "teacher_demo"}
 
 
+DEMO_ADMIN_VIEWS = frozenset("""
+    main.global_search reports.index reports.detail
+    students.list_students students.new_student students.profile students.edit_student
+    students.parents students.family students.promotion students.admission_report
+    students.attendance students.attendance_report students.id_card
+    academics.teachers academics.teacher_record academics.teacher_subjects academics.import_allocations
+    academics.exams academics.results academics.grades academics.report_card
+    timetable.index timetable.import_schedule
+    finance.fees finance.structures finance.payment finance.bulk_vouchers finance.generate_voucher
+    finance.voucher finance.voucher_batch finance.voucher_batch_pdf online_payments.history
+    accounts.dashboard accounts.vouchers accounts.collection
+    hr.employees hr.leave hr.payroll hr.payslip hr.teacher_attendance
+    notifications.index notifications.whatsapp library.books library.issue
+    operations.dashboard operations.transport operations.transport_assign operations.hostel
+    operations.inventory operations.operation_record mess.index
+    admin.users admin.data_edit admin.data_edit_list admin.data_edit_record admin.sessions
+    admin.classes admin.subjects admin.permissions admin.modules admin.banks
+    production.audit production.integrity production.system_health
+    exports.voucher_pdf exports.student_id_card_pdf exports.report_card_pdf exports.receipt
+""".split())
+
+
 def public_demo_enabled():
     if os.environ.get("SCHOOL_ERP_PUBLIC_DEMO") != "1":
         return False

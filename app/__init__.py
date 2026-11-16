@@ -56,7 +56,7 @@ def create_app(test_config=None):
     login_manager.login_view = "auth.login"
 
     from .models import User, SystemSetting
-    from .auth import auth_bp, PUBLIC_DEMO_USERS, public_demo_enabled
+    from .auth import auth_bp, DEMO_ADMIN_VIEWS, PUBLIC_DEMO_USERS, public_demo_enabled
     from .assistant import assistant_bp, available_actions, ollama_model
     from .module_banners import module_banner
     from .main import main_bp
@@ -110,9 +110,8 @@ def create_app(test_config=None):
                 and current_user.username in PUBLIC_DEMO_USERS.values()):
             public_routes = {"auth.login", "auth.logout", "auth.demo_login", "main.dashboard",
                              "main.index", "portal.index", "api.health"}
-            admin_routes = {"reports.index", "reports.detail"}
             can_view = endpoint in public_routes or (
-                current_user.username == "admin_demo" and endpoint in admin_routes
+                current_user.username == "admin_demo" and endpoint in DEMO_ADMIN_VIEWS
             )
             if not can_view or (request.method not in ("GET", "HEAD") and endpoint not in
                                 ("auth.logout", "auth.demo_login")):
@@ -194,7 +193,7 @@ def create_app(test_config=None):
     def template_helpers():
         from .access import module_enabled
         return {"module_enabled": module_enabled, "assistant_actions": available_actions,
-                "public_demo_enabled": public_demo_enabled(),
+                "public_demo_enabled": public_demo_enabled(), "demo_admin_views": DEMO_ADMIN_VIEWS,
                 "assistant_ollama_configured": bool(ollama_model()), "module_banner": module_banner}
 
     @app.errorhandler(404)

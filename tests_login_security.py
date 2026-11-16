@@ -186,7 +186,13 @@ def test_public_demo_preview_is_read_only(app, monkeypatch):
         result = client.post("/demo-login", data={"role": role, "csrf_token": csrf})
         assert result.status_code == 303 and result.location == redirect_to
         assert client.get(redirect_to).status_code == 200
-        assert client.get("/admin/users").status_code == 403
+        assert client.get("/admin/users").status_code == (200 if role == "admin" else 403)
+        assert client.post("/admin/users", data={"csrf_token": login_data(client)["csrf_token"]}).status_code == 403
+        assert client.get("/admin/system/backup").status_code == 403
         assert client.get("/profile/password").status_code == 403
         if role == "admin":
             assert client.get("/reports/students").status_code == 200
+            for path in ("/students/", "/academics/teachers", "/finance/fees", "/hr/payroll",
+                         "/library/books", "/inventory", "/mess/", "/admin/modules"):
+                assert client.get(path).status_code == 200, path
+            assert client.get("/reports/login").status_code == 403
